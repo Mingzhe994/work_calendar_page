@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>任务详情调试</title>
+    <script>
+        // 测试函数
+        async function testTaskDetails() {
+            try {
+                console.log('开始测试任务详情...');
+                
+                // 获取任务数据
+                const response = await fetch('/api/tasks/3');
+                const task = await response.json();
+                console.log('获取到的任务数据:', task);
+                
+                // 创建模拟事件对象
+                const mockEvent = {
+                    id: task.id,
+                    title: task.title,
+                    start: task.start_date,
+                    end: task.deadline,
+                    extendedProps: {
+                        task_type: task.task_type,
+                        description: task.description,
+                        status: task.status,
+                        progress: task.progress,
+                        start_date: task.start_date,
+                        deadline: task.deadline,
+                        priority: task.priority,
+                        created_at: task.created_at,
+                        updated_at: task.updated_at,
+                        completed_at: task.completed_at
+                    }
+                };
+                console.log('创建的模拟事件对象:', mockEvent);
+                
+                // 检查DOM元素是否存在
+                const elements = [
+                    'activeTaskLayout',
+                    'completedTaskLayout',
+                    'detailTitle',
+                    'detailDescription',
+                    'detailType',
+                    'detailCurrentStatus',
+                    'detailPriority',
+                    'detailStartDate',
+                    'detailDeadline',
+                    'detailCreatedAt',
+                    'detailUpdatedAt',
+                    'headerStatus'
+                ];
+                
+                elements.forEach(id => {
+                    const element = document.getElementById(id);
+                    console.log(`元素 ${id}:`, element ? '存在' : '不存在');
+                });
+                
+            } catch (error) {
+                console.error('测试失败:', error);
+            }
+        }
+        
+        // 页面加载后执行测试
+        window.onload = function() {
+            setTimeout(testTaskDetails, 1000);
+        };
+    </script>
+</head>
+<body>
+    <h1>任务详情调试页面</h1>
+    <p>请打开浏览器控制台查看调试信息</p>
+    <button onclick="testTaskDetails()">重新测试</button>
+</body>
+</html>

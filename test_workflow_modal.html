@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>测试工作流清单功能</title>
+    <script>
+        function testWorkflowModal() {
+            // 模拟点击工作流清单按钮
+            fetch('http://127.0.0.1:5005/api/workflows')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('工作流数据:', data);
+                    if (data.workflows && data.workflows.length > 0) {
+                        document.getElementById('result').innerHTML = 
+                            '<h3>✅ 工作流API正常</h3>' +
+                            '<p>找到 ' + data.workflows.length + ' 个工作流:</p>' +
+                            '<ul>' + 
+                            data.workflows.map(w => '<li>' + w.name + ' (' + w.steps.length + ' 个步骤)</li>').join('') +
+                            '</ul>';
+                    } else {
+                        document.getElementById('result').innerHTML = '<h3>❌ 没有工作流数据</h3>';
+                    }
+                })
+                .catch(error => {
+                    console.error('错误:', error);
+                    document.getElementById('result').innerHTML = '<h3>❌ API调用失败</h3><p>' + error + '</p>';
+                });
+        }
+    </script>
+</head>
+<body>
+    <h1>工作流清单功能测试</h1>
+    <button onclick="testWorkflowModal()">测试工作流API</button>
+    <div id="result"></div>
+    
+    <h2>测试步骤:</h2>
+    <ol>
+        <li>点击上面的按钮测试API</li>
+        <li>打开主页面: <a href="http://127.0.0.1:5005" target="_blank">http://127.0.0.1:5005</a></li>
+        <li>点击右上角的"工作流清单"按钮</li>
+        <li>检查模态框是否显示工作流列表</li>
+    </ol>
+</body>
+</html>

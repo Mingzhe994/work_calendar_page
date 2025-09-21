@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>简单测试</title>
+</head>
+<body>
+    <h1>工作流功能测试</h1>
+    <button onclick="testWorkflow()">测试工作流API</button>
+    <div id="result"></div>
+    
+    <script>
+        function testWorkflow() {
+            console.log('开始测试工作流API...');
+            document.getElementById('result').innerHTML = '正在加载...';
+            
+            fetch('/api/workflows')
+                .then(response => {
+                    console.log('API响应状态:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('收到数据:', data);
+                    let html = '<h2>工作流列表:</h2>';
+                    if (data.workflows) {
+                        data.workflows.forEach(workflow => {
+                            html += `<p><strong>${workflow.name}</strong>: ${workflow.description}</p>`;
+                        });
+                    }
+                    document.getElementById('result').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('错误:', error);
+                    document.getElementById('result').innerHTML = '错误: ' + error.message;
+                });
+        }
+        
+        // 页面加载时自动测试
+        window.onload = function() {
+            console.log('页面加载完成');
+            testWorkflow();
+        };
+    </script>
+</body>
+</html>
