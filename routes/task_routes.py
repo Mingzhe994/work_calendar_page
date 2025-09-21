@@ -1,17 +1,21 @@
 from flask import Blueprint, request, jsonify
+from flask_login import login_required, current_user
 from services import TaskService
 
 task_bp = Blueprint('task', __name__, url_prefix='/api/tasks')
 
 @task_bp.route('')
+@login_required
 def get_tasks():
     """获取所有任务"""
     exclude_completed = request.args.get('exclude_completed', 'false').lower() == 'true'
     status = request.args.get('status')
-    tasks = TaskService.get_all_tasks(exclude_completed=exclude_completed, status=status)
+    # 添加用户隔离，只获取当前用户的任务
+    tasks = TaskService.get_all_tasks(exclude_completed=exclude_completed, status=status, user_id=current_user.id)
     return jsonify(tasks)
 
 @task_bp.route('', methods=['POST'])
+@login_required
 def add_task():
     """添加新任务"""
     try:
@@ -41,6 +45,10 @@ def add_task():
             if start_date > deadline:
                 return jsonify({'success': False, 'error': '起始日期必须早于或等于截止日期'}), 400
         
+        # 添加当前用户ID到任务数据
+        if 'user_id' not in data:
+            data['user_id'] = current_user.id
+            
         task = TaskService.create_task(data)
         return jsonify({'success': True, 'id': task.id})
     except Exception as e:

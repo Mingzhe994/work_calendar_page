@@ -3,7 +3,7 @@ from . import db
 
 class Issue(db.Model):
     """问题模型"""
-    __tablename__ = 'issue'
+    __tablename__ = 'issues'
     
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
@@ -14,6 +14,7 @@ class Issue(db.Model):
     resolved_at = db.Column(db.DateTime)
     solutions = db.Column(db.Text)  # 解决方案列表，JSON格式存储
     successful_solution = db.Column(db.Text)  # 成功的解决方案
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
     def to_dict(self):
         """转换为字典格式"""

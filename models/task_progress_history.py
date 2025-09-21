@@ -6,7 +6,7 @@ class TaskProgressHistory(db.Model):
     __tablename__ = 'task_progress_history'
     
     id = db.Column(db.Integer, primary_key=True)
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
+    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
     operation_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     old_progress = db.Column(db.String(200), nullable=True)  # 原进展步骤
     new_progress = db.Column(db.String(200), nullable=True)  # 新进展步骤

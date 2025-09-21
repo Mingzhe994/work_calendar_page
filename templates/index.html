@@ -19,7 +19,18 @@
                     <div class="navbar-nav ms-auto">
                         <button class="btn btn-outline-light me-2" data-bs-toggle="modal" data-bs-target="#taskListModal">任务列表</button>
                         <button class="btn btn-outline-light me-2" data-bs-toggle="modal" data-bs-target="#issueListModal">问题列表</button>
-                        <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#workflowConfigModal">工作流列表</button>
+                        <button class="btn btn-outline-light me-2" data-bs-toggle="modal" data-bs-target="#workflowConfigModal">工作流列表</button>
+                        {% if current_user.is_authenticated %}
+                        <div class="d-flex align-items-center">
+                            <span class="text-light me-2"><i class="fas fa-user me-1"></i>{{ current_user.username }}</span>
+                            {% if current_user.is_admin %}
+                            <a href="{{ url_for('auth.admin_dashboard') }}" class="btn btn-outline-light btn-sm me-2">
+                                <i class="fas fa-cog"></i> 管理控制台
+                            </a>
+                            {% endif %}
+                            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">退出</a>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </nav>

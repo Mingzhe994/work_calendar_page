@@ -39,6 +39,20 @@ class IssueModule {
                     'Pragma': 'no-cache'
                 }
             });
+            
+            // 检查响应状态，如果是重定向或未授权，可能是未登录
+            if (response.redirected || response.status === 401) {
+                console.log('用户未登录，请先登录');
+                return [];
+            }
+            
+            // 检查内容类型，确保是JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                // 静默处理非JSON响应
+                return [];
+            }
+            
             const issues = await response.json();
             
             this.issues = issues;
@@ -60,7 +74,7 @@ class IssueModule {
             return issues;
         } catch (error) {
             console.error('加载问题失败:', error);
-            Utils.showError('加载问题失败，请重试');
+            // 静默处理所有错误，不显示错误提示
             return [];
         }
     }

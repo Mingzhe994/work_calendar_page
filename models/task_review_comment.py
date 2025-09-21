@@ -6,7 +6,7 @@ class TaskReviewComment(db.Model):
     __tablename__ = 'task_review_comment'
     
     id = db.Column(db.Integer, primary_key=True)
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
+    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
     content = db.Column(db.Text, nullable=False)  # 评论内容
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     

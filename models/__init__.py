@@ -8,5 +8,6 @@ from .issue import Issue
 from .workflow import Workflow
 from .task_progress_history import TaskProgressHistory
 from .task_review_comment import TaskReviewComment
+from .user import User
 
-__all__ = ['db', 'Task', 'Issue', 'Workflow', 'TaskProgressHistory', 'TaskReviewComment']
+__all__ = ['db', 'Task', 'Issue', 'Workflow', 'TaskProgressHistory', 'TaskReviewComment', 'User']

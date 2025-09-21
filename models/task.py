@@ -7,7 +7,7 @@ def beijing_now():
 
 class Task(db.Model):
     """任务模型"""
-    __tablename__ = 'task'
+    __tablename__ = 'tasks'
     
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
@@ -21,6 +21,7 @@ class Task(db.Model):
     created_at = db.Column(db.DateTime, default=beijing_now)
     updated_at = db.Column(db.DateTime, default=beijing_now, onupdate=beijing_now)
     completed_at = db.Column(db.DateTime)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
     def is_overdue(self):
         """判断任务是否已延期"""

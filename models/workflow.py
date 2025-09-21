@@ -5,7 +5,7 @@ from models.task import beijing_now
 
 class Workflow(db.Model):
     """工作流模型"""
-    __tablename__ = 'workflow'
+    __tablename__ = 'workflows'
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)  # 工作流名称
@@ -14,6 +14,7 @@ class Workflow(db.Model):
     is_default = db.Column(db.Boolean, default=False)  # 是否为默认工作流
     created_at = db.Column(db.DateTime, default=beijing_now)
     updated_at = db.Column(db.DateTime, default=beijing_now, onupdate=beijing_now)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
     def get_steps(self):
         """获取步骤列表"""

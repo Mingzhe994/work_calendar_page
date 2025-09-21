@@ -8,9 +8,27 @@ class IssueService:
     """问题服务类"""
     
     @staticmethod
-    def get_open_issues() -> List[Dict[str, Any]]:
+    def get_all_issues(user_id=None) -> List[Dict[str, Any]]:
+        """获取所有问题，如果提供user_id则只返回该用户的问题"""
+        query = Issue.query
+        
+        if user_id:
+            # 如果指定了用户ID，按用户过滤
+            query = query.filter_by(user_id=user_id)
+            
+        issues = query.order_by(Issue.priority.desc()).all()
+        return [issue.to_dict() for issue in issues]
+    
+    @staticmethod
+    def get_open_issues(user_id=None) -> List[Dict[str, Any]]:
         """获取所有开放的问题"""
-        issues = Issue.query.filter_by(status='open').order_by(Issue.priority.desc()).all()
+        query = Issue.query.filter_by(status='open')
+        
+        if user_id:
+            # 如果指定了用户ID，按用户过滤
+            query = query.filter_by(user_id=user_id)
+            
+        issues = query.order_by(Issue.priority.desc()).all()
         return [issue.to_dict() for issue in issues]
     
     @staticmethod
@@ -24,7 +42,8 @@ class IssueService:
         issue = Issue(
             title=data['title'],
             description=data.get('description', ''),
-            priority=data.get('priority', 'medium')
+            priority=data.get('priority', 'medium'),
+            user_id=data.get('user_id')
         )
         
         db.session.add(issue)
@@ -98,9 +117,15 @@ class IssueService:
         return True
     
     @staticmethod
-    def get_all_issues() -> List[Dict[str, Any]]:
-        """获取所有问题（包括已解决的）"""
-        issues = Issue.query.order_by(Issue.created_at.desc()).all()
+    def get_all_issues_with_resolved(user_id=None) -> List[Dict[str, Any]]:
+        """获取所有问题（包括已解决的），如果提供user_id则只返回该用户的问题"""
+        query = Issue.query
+        
+        if user_id:
+            # 如果指定了用户ID，按用户过滤
+            query = query.filter_by(user_id=user_id)
+            
+        issues = query.order_by(Issue.created_at.desc()).all()
         return [issue.to_dict() for issue in issues]
         
     @staticmethod

@@ -8,10 +8,14 @@ class TaskService:
     """任务服务类"""
     
     @staticmethod
-    def get_all_tasks(exclude_completed: bool = False, status: str = None) -> List[Dict[str, Any]]:
-        """获取所有任务"""
+    def get_all_tasks(exclude_completed: bool = False, status: str = None, user_id: int = None) -> List[Dict[str, Any]]:
+        """获取所有任务，如果提供user_id则只返回该用户的任务"""
         query = Task.query
         
+        if user_id:
+            # 如果指定了用户ID，按用户过滤
+            query = query.filter_by(user_id=user_id)
+            
         if status:
             # 如果指定了状态，按状态过滤
             query = query.filter(Task.status == status)
@@ -61,7 +65,8 @@ class TaskService:
             deadline=deadline.date() if deadline else None,  # 转换为日期对象
             status=data.get('status', 'pending'),
             priority=data.get('priority', 'medium'),
-            progress=data.get('progress')
+            progress=data.get('progress'),
+            user_id=data.get('user_id')
         )
         
         db.session.add(task)

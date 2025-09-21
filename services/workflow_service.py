@@ -6,10 +6,16 @@ class WorkflowService:
     """工作流服务类"""
     
     @staticmethod
-    def get_workflow_by_task_type(task_type: str) -> Dict[str, Any]:
+    def get_workflow_by_task_type(task_type: str, user_id=None) -> Dict[str, Any]:
         """根据任务类型获取工作流"""
         # 首先尝试从数据库获取工作流
-        workflow = Workflow.query.filter_by(name=task_type).first()
+        query = Workflow.query.filter_by(name=task_type)
+        
+        # 如果指定了用户ID，按用户过滤
+        if user_id:
+            query = query.filter_by(user_id=user_id)
+            
+        workflow = query.first()
         if workflow:
             return {'steps': workflow.get_steps()}
         
@@ -20,9 +26,15 @@ class WorkflowService:
         return {'error': 'Task type not found'}
     
     @staticmethod
-    def get_all_workflows() -> List[Dict[str, Any]]:
-        """获取所有工作流"""
-        workflows = Workflow.query.all()
+    def get_all_workflows(user_id=None) -> List[Dict[str, Any]]:
+        """获取所有工作流，如果提供user_id则只返回该用户的工作流"""
+        query = Workflow.query
+        
+        # 如果指定了用户ID，按用户过滤
+        if user_id:
+            query = query.filter_by(user_id=user_id)
+            
+        workflows = query.all()
         return [workflow.to_dict() for workflow in workflows]
     
     @staticmethod
@@ -47,7 +59,8 @@ class WorkflowService:
             workflow = Workflow(
                 name=data['name'],
                 description=data.get('description', ''),
-                is_default=data.get('is_default', False)
+                is_default=data.get('is_default', False),
+                user_id=data.get('user_id')
             )
             workflow.set_steps(steps)
             

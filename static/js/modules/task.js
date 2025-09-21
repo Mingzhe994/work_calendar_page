@@ -130,6 +130,7 @@ class TaskModule {
                             </div>
                         </div>
                         ${task.progress ? `<small class="text-info">当前进展: ${task.progress}</small>` : ''}
+                        ${task.user_name ? `<small class="text-muted d-block"><i class="fas fa-user me-1"></i>创建者: ${task.user_name}</small>` : ''}
                     </div>
                 </div>
                 <div class="progress" style="height: 6px;">

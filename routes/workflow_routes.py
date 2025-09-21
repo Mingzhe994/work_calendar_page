@@ -1,27 +1,36 @@
 from flask import Blueprint, request, jsonify
+from flask_login import login_required, current_user
 from services import WorkflowService
 
 workflow_bp = Blueprint('workflow', __name__, url_prefix='/api')
 
 @workflow_bp.route('/workflow/<task_type>')
+@login_required
 def get_workflow(task_type):
     """根据任务类型获取工作流"""
-    result = WorkflowService.get_workflow_by_task_type(task_type)
+    result = WorkflowService.get_workflow_by_task_type(task_type, user_id=current_user.id)
     if 'error' in result:
         return jsonify(result), 404
     
     return jsonify(result)
 
 @workflow_bp.route('/workflows')
+@login_required
 def get_workflows():
     """获取所有工作流"""
-    workflows = WorkflowService.get_all_workflows()
+    workflows = WorkflowService.get_all_workflows(user_id=current_user.id)
     return jsonify({'workflows': workflows})
 
 @workflow_bp.route('/workflows', methods=['POST'])
+@login_required
 def create_workflow():
     """创建新工作流"""
     data = request.get_json()
+    
+    # 添加当前用户ID到工作流数据
+    if 'user_id' not in data:
+        data['user_id'] = current_user.id
+        
     result = WorkflowService.create_workflow(data)
     
     if not result.get('success', False):
@@ -30,6 +39,7 @@ def create_workflow():
     return jsonify(result)
 
 @workflow_bp.route('/workflows/<int:workflow_id>', methods=['PUT'])
+@login_required
 def update_workflow(workflow_id):
     """更新工作流"""
     data = request.get_json()
@@ -41,6 +51,7 @@ def update_workflow(workflow_id):
     return jsonify(result)
 
 @workflow_bp.route('/workflows/<int:workflow_id>/set-default', methods=['POST'])
+@login_required
 def set_default_workflow(workflow_id):
     """设置默认工作流"""
     result = WorkflowService.set_default_workflow(workflow_id)

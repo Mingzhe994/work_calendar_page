@@ -1,27 +1,44 @@
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from models import Task
 
 class AnalyticsService:
     """分析统计服务类"""
     
     @staticmethod
-    def get_analytics_data() -> Dict[str, Any]:
-        """获取分析统计数据"""
+    def get_analytics_data(user_id: Optional[int] = None) -> Dict[str, Any]:
+        """
+        获取分析统计数据
+        
+        Args:
+            user_id: 用户ID，如果提供则只返回该用户的数据
+        """
         # 获取本月完成的任务数
         current_month = datetime.now().replace(day=1)
-        monthly_completed = Task.query.filter(
+        query = Task.query.filter(
             Task.status == 'completed',
             Task.completed_at >= current_month
-        ).count()
+        )
+        
+        # 添加用户过滤条件
+        if user_id is not None:
+            query = query.filter(Task.user_id == user_id)
+            
+        monthly_completed = query.count()
         
         # 获取上月完成的任务数
         last_month = (current_month - timedelta(days=1)).replace(day=1)
-        last_month_completed = Task.query.filter(
+        last_month_query = Task.query.filter(
             Task.status == 'completed',
             Task.completed_at >= last_month,
             Task.completed_at < current_month
-        ).count()
+        )
+        
+        # 添加用户过滤条件
+        if user_id is not None:
+            last_month_query = last_month_query.filter(Task.user_id == user_id)
+            
+        last_month_completed = last_month_query.count()
         
         # 计算环比变化
         if last_month_completed > 0:
@@ -30,7 +47,11 @@ class AnalyticsService:
             month_over_month_change = 100 if monthly_completed > 0 else 0
         
         # 计算平均完成时间
-        completed_tasks = Task.query.filter_by(status='completed').all()
+        completed_query = Task.query.filter_by(status='completed')
+        if user_id is not None:
+            completed_query = completed_query.filter_by(user_id=user_id)
+            
+        completed_tasks = completed_query.all()
         total_days = 0
         task_count = 0
         
@@ -43,11 +64,17 @@ class AnalyticsService:
         average_days = round(total_days / task_count, 1) if task_count > 0 else 0
         
         # 获取完成总数
-        total_completed = Task.query.filter_by(status='completed').count()
+        total_completed_query = Task.query.filter_by(status='completed')
+        if user_id is not None:
+            total_completed_query = total_completed_query.filter_by(user_id=user_id)
+        total_completed = total_completed_query.count()
         
         # 获取排名第一的任务类型
         task_types = {}
-        tasks_by_type = Task.query.filter_by(status='completed').with_entities(Task.task_type).all()
+        tasks_by_type_query = Task.query.filter_by(status='completed')
+        if user_id is not None:
+            tasks_by_type_query = tasks_by_type_query.filter_by(user_id=user_id)
+        tasks_by_type = tasks_by_type_query.with_entities(Task.task_type).all()
         for (task_type,) in tasks_by_type:
             if task_type not in task_types:
                 task_types[task_type] = 0
@@ -90,21 +117,34 @@ class AnalyticsService:
         }
     
     @staticmethod
-    def get_task_statistics() -> Dict[str, Any]:
-        """获取任务统计信息"""
-        total_tasks = Task.query.count()
-        pending_tasks = Task.query.filter_by(status='pending').count()
-        in_progress_tasks = Task.query.filter_by(status='in_progress').count()
-        completed_tasks = Task.query.filter_by(status='completed').count()
+    def get_task_statistics(user_id: Optional[int] = None) -> Dict[str, Any]:
+        """
+        获取任务统计信息
+        
+        Args:
+            user_id: 用户ID，如果提供则只返回该用户的数据
+        """
+        # 基础查询
+        base_query = Task.query
+        if user_id is not None:
+            base_query = base_query.filter_by(user_id=user_id)
+            
+        total_tasks = base_query.count()
+        pending_tasks = base_query.filter_by(status='pending').count()
+        in_progress_tasks = base_query.filter_by(status='in_progress').count()
+        completed_tasks = base_query.filter_by(status='completed').count()
         
         # 按优先级统计
-        high_priority = Task.query.filter_by(priority='high').count()
-        medium_priority = Task.query.filter_by(priority='medium').count()
-        low_priority = Task.query.filter_by(priority='low').count()
+        high_priority = base_query.filter_by(priority='high').count()
+        medium_priority = base_query.filter_by(priority='medium').count()
+        low_priority = base_query.filter_by(priority='low').count()
         
         # 按任务类型统计
         task_types = {}
-        tasks_by_type = Task.query.with_entities(Task.task_type, Task.status, Task.created_at, Task.completed_at).all()
+        tasks_by_type_query = Task.query
+        if user_id is not None:
+            tasks_by_type_query = tasks_by_type_query.filter_by(user_id=user_id)
+        tasks_by_type = tasks_by_type_query.with_entities(Task.task_type, Task.status, Task.created_at, Task.completed_at).all()
         for task_type, status, created_at, completed_at in tasks_by_type:
             if task_type not in task_types:
                 task_types[task_type] = {

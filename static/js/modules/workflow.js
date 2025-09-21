@@ -130,6 +130,12 @@ class WorkflowModule {
                             <span class="me-3">
                                 <i class="fas fa-calendar me-1"></i>创建时间: ${new Date(workflow.created_at).toLocaleDateString()}
                             </span>
+                            ${workflow.user_name ? 
+                                `<span class="me-3">
+                                    <i class="fas fa-user me-1"></i>创建者: ${workflow.user_name}
+                                </span>` : 
+                                ''
+                            }
                             <div class="ms-auto">
                                 <button class="btn btn-sm btn-outline-secondary me-2" onclick="event.stopPropagation(); window.WorkflowModule.editWorkflow(${workflow.id})" title="编辑">
                                     <i class="fas fa-edit me-1"></i>编辑

@@ -1,9 +1,11 @@
-from flask import Blueprint, render_template, current_app
+from flask import Blueprint, render_template, current_app, redirect, url_for
+from flask_login import login_required, current_user
 from services import TaskService, IssueService
 
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
+@login_required
 def index():
     """主页"""
     tasks = TaskService.get_pending_tasks()

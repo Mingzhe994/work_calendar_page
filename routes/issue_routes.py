@@ -1,15 +1,19 @@
 from flask import Blueprint, request, jsonify
+from flask_login import login_required, current_user
 from services import IssueService
 
 issue_bp = Blueprint('issue', __name__, url_prefix='/api/issues')
 
 @issue_bp.route('')
+@login_required
 def get_issues():
     """获取所有问题"""
-    issues = IssueService.get_all_issues()
+    # 添加用户隔离，只获取当前用户的问题
+    issues = IssueService.get_all_issues(user_id=current_user.id)
     return jsonify(issues)
 
 @issue_bp.route('/<int:issue_id>')
+@login_required
 def get_issue(issue_id):
     """获取单个问题详情"""
     issue = IssueService.get_issue_by_id(issue_id)
@@ -19,6 +23,7 @@ def get_issue(issue_id):
     return jsonify(issue.to_dict())
 
 @issue_bp.route('', methods=['POST'])
+@login_required
 def add_issue():
     """添加新问题"""
     try:
@@ -26,12 +31,17 @@ def add_issue():
         if not data:
             return jsonify({'success': False, 'error': '无效的请求数据'}), 400
         
+        # 添加当前用户ID到问题数据
+        if 'user_id' not in data:
+            data['user_id'] = current_user.id
+            
         issue = IssueService.create_issue(data)
         return jsonify({'success': True, 'id': issue.id})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @issue_bp.route('/<int:issue_id>', methods=['DELETE'])
+@login_required
 def delete_issue(issue_id):
     """删除问题（标记为已解决）"""
     success = IssueService.delete_issue(issue_id)
@@ -41,6 +51,7 @@ def delete_issue(issue_id):
     return jsonify({'success': True})
 
 @issue_bp.route('/<int:issue_id>/resolve', methods=['PUT'])
+@login_required
 def resolve_issue(issue_id):
     """解决问题"""
     success = IssueService.resolve_issue(issue_id)
