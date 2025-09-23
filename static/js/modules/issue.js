@@ -32,6 +32,12 @@ class IssueModule {
      */
     async loadIssues() {
         try {
+            // 首先清空问题列表，避免显示旧数据
+            const issuesList = document.getElementById('issuesList');
+            if (issuesList) {
+                issuesList.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> 加载中...</div>';
+            }
+            
             const response = await fetch('/api/issues', {
                 cache: 'no-cache', // 添加缓存控制，确保每次都获取最新数据
                 headers: {
@@ -57,18 +63,6 @@ class IssueModule {
             
             this.issues = issues;
             this.displayIssues(issues);
-            
-            // 如果首页问题列表存在，强制刷新
-            const issuesList = document.getElementById('issuesList');
-            if (issuesList) {
-                const openIssues = issues.filter(issue => issue.status !== 'resolved');
-                if (openIssues.length === 0) {
-                    issuesList.innerHTML = '<div class="text-center text-muted py-4">暂无待解决问题</div>';
-                } else {
-                    const issuesHtml = openIssues.map(issue => this.createIssueElement(issue)).join('');
-                    issuesList.innerHTML = issuesHtml;
-                }
-            }
             
             console.log('问题加载完成');
             return issues;
