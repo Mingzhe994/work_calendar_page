@@ -39,12 +39,14 @@
         <!-- 横向滚动公告栏 -->
         <div class="row">
             <div class="col-12">
-                <div class="alert alert-info mb-0 py-2" style="background: linear-gradient(90deg, #e3f2fd, #f3e5f5); border: none;">
+                <div class="alert alert-info mb-0 py-2 announcement-bar-expanded" style="background: linear-gradient(90deg, #e3f2fd, #f3e5f5); border: none;">
                     <div class="d-flex align-items-center">
                         <i class="fas fa-bullhorn me-2"></i>
                         <div class="overflow-hidden flex-grow-1">
                             <div id="announcementScroll" class="announcement-scroll">
-                                <span id="announcementContent">正在加载已解决问题...</span>
+                                <div id="announcementContent" class="announcement-scroll-content">
+                                    <span class="announcement-item">正在加载已解决问题...</span>
+                                </div>
                             </div>
                         </div>
                     </div>

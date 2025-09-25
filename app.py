@@ -57,5 +57,5 @@ if __name__ == '__main__':
             db.session.add(admin)
             db.session.commit()
             print('默认管理员账号已创建')
-    
-    app.run(debug=True, port=5005)
+
+    app.run(debug=True, host='0.0.0.0', port=5005)

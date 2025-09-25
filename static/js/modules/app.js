@@ -84,9 +84,10 @@ class App {
                 this.workflowModule.loadWorkflows()
             ]);
             
-            // 初始化公告栏
+            // 初始化公告栏 - 确保异步等待
             if (this.issueModule && this.issueModule.initAnnouncementBar) {
-                this.issueModule.initAnnouncementBar();
+                await this.issueModule.initAnnouncementBar();
+                console.log('公告栏初始化完成');
             }
         } catch (error) {
             console.error('加载初始数据失败:', error);

@@ -2784,7 +2784,7 @@ a:hover {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    animation: scroll-announcement 203s linear infinite;
+    animation: scroll-announcement 60s linear infinite;
     will-change: transform;
     width: auto; /* 确保宽度自适应内容 */
 }
@@ -2792,18 +2792,21 @@ a:hover {
 /* 公告项目 */
 .announcement-item {
     display: inline-block;
-    margin-right: 50vw; /* 半个屏幕的间隔距离 */
+    margin-right: 100px; /* 项目间的间距 */
     padding: 0.5rem 1.5rem;
     font-weight: 600;
-    color: #2c3e50;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(240, 248, 255, 0.8));
+    color: #1a365d;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 248, 255, 0.9));
     border-radius: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    text-shadow: none;
     transition: all 0.3s ease;
-    border: 1px solid rgba(0, 123, 255, 0.2);
-    white-space: normal; /* 允许文本换行 */
-    max-width: 80vw; /* 限制最大宽度 */
+    border: 1px solid rgba(0, 123, 255, 0.3);
+    white-space: nowrap;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    z-index: 10;
+    position: relative;
 }
 
 /* 公告项目悬停效果 */
@@ -2816,25 +2819,21 @@ a:hover {
     text-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
 }
 
-/* 滚动动画 - 200秒滚动 + 3秒延迟 */
+/* 滚动动画 - 60秒滚动 */
 @keyframes scroll-announcement {
     0% {
-        transform: translate3d(100vw, -50%, 0);
-        opacity: 0.8;
-    }
-    2% {
+        transform: translate3d(100%, -50%, 0);
         opacity: 1;
     }
-    96% {
+    5% {
         opacity: 1;
     }
-    98.5% {
-        transform: translate3d(-100%, -50%, 0);
-        opacity: 0.8;
+    95% {
+        opacity: 1;
     }
     100% {
         transform: translate3d(-100%, -50%, 0);
-        opacity: 0;
+        opacity: 1; /* 保持完全可见 */
     }
 }
 
@@ -2846,25 +2845,25 @@ a:hover {
 /* 响应式设计 */
 @media (max-width: 768px) {
     .announcement-item {
-        margin-right: 80vw; /* 移动设备上增加间隔 */
-        font-size: 0.85rem;
-        padding: 0 0.75rem;
+        margin-right: 50px; /* 移动设备上合理间隔 */
+        font-size: 0.75rem;
+        padding: 0.4rem 1rem;
     }
     
     .announcement-scroll-content {
-        animation-duration: 180s; /* 移动设备稍快一些 */
+        animation-duration: 50s; /* 移动设备稍快一些 */
     }
 }
 
 @media (max-width: 480px) {
     .announcement-item {
-        margin-right: 100vw; /* 小屏幕设备上进一步增加间隔 */
-        font-size: 0.8rem;
-        padding: 0 0.5rem;
+        margin-right: 40px; /* 小屏幕设备上合理间隔 */
+        font-size: 0.7rem;
+        padding: 0.3rem 0.8rem;
     }
     
     .announcement-scroll-content {
-        animation-duration: 160s; /* 小屏幕设备更快 */
+        animation-duration: 40s; /* 小屏幕设备更快 */
     }
 }
 
@@ -2889,4 +2888,14 @@ a:hover {
     opacity: 0.8;
     text-align: center;
     width: 100%;
+}
+
+/* 扩大公告栏区域 - 1.5倍高度 */
+.announcement-bar-expanded {
+    padding: 0.05rem 0.05rem !important; /* 原来py-2约为0.5rem，现在扩大1.5倍 */
+    min-height: 2.25rem; /* 设置最小高度确保有足够空间 */
+}
+
+.announcement-bar-expanded .announcement-scroll {
+    height: 3.0rem; /* 给滚动容器设置具体高度 */
 }

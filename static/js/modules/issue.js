@@ -32,12 +32,6 @@ class IssueModule {
      */
     async loadIssues() {
         try {
-            // 首先清空问题列表，避免显示旧数据
-            const issuesList = document.getElementById('issuesList');
-            if (issuesList) {
-                issuesList.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> 加载中...</div>';
-            }
-            
             const response = await fetch('/api/issues', {
                 cache: 'no-cache', // 添加缓存控制，确保每次都获取最新数据
                 headers: {
@@ -63,6 +57,18 @@ class IssueModule {
             
             this.issues = issues;
             this.displayIssues(issues);
+            
+            // 如果首页问题列表存在，强制刷新
+            const issuesList = document.getElementById('issuesList');
+            if (issuesList) {
+                const openIssues = issues.filter(issue => issue.status !== 'resolved');
+                if (openIssues.length === 0) {
+                    issuesList.innerHTML = '<div class="text-center text-muted py-4">暂无待解决问题</div>';
+                } else {
+                    const issuesHtml = openIssues.map(issue => this.createIssueElement(issue)).join('');
+                    issuesList.innerHTML = issuesHtml;
+                }
+            }
             
             console.log('问题加载完成');
             return issues;
@@ -451,6 +457,12 @@ class IssueModule {
                 // 重新加载问题列表
                 await this.loadIssues();
                 
+                // 如果问题清单模态框是打开的，刷新其内容
+                const issueListModal = document.getElementById('issueListModal');
+                if (issueListModal && issueListModal.classList.contains('show')) {
+                    this.displayIssueListTabs();
+                }
+                
                 // 重新加载解决方案
                 await this.loadSolutions(this.currentIssueId);
                 
@@ -546,11 +558,20 @@ class IssueModule {
                 // 重新加载问题列表
                 await this.loadIssues();
                 
+                // 如果问题清单模态框是打开的，刷新其内容
+                const issueListModal = document.getElementById('issueListModal');
+                if (issueListModal && issueListModal.classList.contains('show')) {
+                    this.displayIssueListTabs();
+                }
+                
                 // 关闭问题详情模态框（如果打开的话）
                 const issueDetailsModal = bootstrap.Modal.getInstance(document.getElementById('issueDetailsModal'));
                 if (issueDetailsModal) {
                     issueDetailsModal.hide();
                 }
+                
+                // 更新公告栏
+                await this.updateAnnouncementBar();
                 
                 Utils.showSuccess('问题已解决');
             } else {
@@ -753,6 +774,16 @@ class IssueModule {
             
             if (data.success) {
                 await this.loadIssues();
+                
+                // 如果问题清单模态框是打开的，刷新其内容
+                const issueListModal = document.getElementById('issueListModal');
+                if (issueListModal && issueListModal.classList.contains('show')) {
+                    this.displayIssueListTabs();
+                }
+                
+                // 更新公告栏
+                await this.updateAnnouncementBar();
+                
                 Utils.showSuccess(`成功解决 ${issueIds.length} 个问题`);
             } else {
                 Utils.showError(data.message || '批量解决问题失败');
@@ -776,13 +807,21 @@ class IssueModule {
      */
     async updateAnnouncementBar() {
         try {
+            console.log('开始更新公告栏，总问题数:', this.issues ? this.issues.length : 0);
+            
             const resolvedIssues = this.issues.filter(issue => issue.resolved_at && issue.successful_solution);
+            console.log('符合条件的已解决问题数:', resolvedIssues.length);
+            
             const announcementContent = document.getElementById('announcementContent');
             
-            if (!announcementContent) return;
+            if (!announcementContent) {
+                console.error('找不到announcementContent元素');
+                return;
+            }
             
             if (resolvedIssues.length === 0) {
-                announcementContent.innerHTML = '<div class="announcement-empty">暂无已解决问题的成功方案</div>';
+                announcementContent.innerHTML = '<span class="announcement-item announcement-empty">暂无已解决问题的成功方案</span>';
+                console.log('公告栏显示空状态');
                 return;
             }
             
@@ -791,14 +830,11 @@ class IssueModule {
                 `<span class="announcement-item">${issue.title} - ${issue.successful_solution}</span>`
             );
             
-            // 创建滚动内容容器
-            const scrollContent = `
-                <div class="announcement-scroll-content">
-                    ${announcementItems.join('')}
-                </div>
-            `;
+            console.log('公告项目:', announcementItems);
             
-            announcementContent.innerHTML = scrollContent;
+            // 直接设置公告项目内容（因为announcementContent现在就是.announcement-scroll-content容器）
+            announcementContent.innerHTML = announcementItems.join('');
+            console.log('公告栏内容已设置');
             
             // 重新启动动画（如果需要）
             this.restartAnnouncementAnimation();
@@ -807,7 +843,7 @@ class IssueModule {
             console.error('更新公告栏失败:', error);
             const announcementContent = document.getElementById('announcementContent');
             if (announcementContent) {
-                announcementContent.innerHTML = '<div class="announcement-empty">加载公告失败</div>';
+                announcementContent.innerHTML = '<span class="announcement-item announcement-empty">加载公告失败</span>';
             }
         }
     }
@@ -816,16 +852,20 @@ class IssueModule {
      * 重新启动公告栏动画
      */
     restartAnnouncementAnimation() {
-        const scrollContent = document.querySelector('.announcement-scroll-content');
+        const scrollContent = document.getElementById('announcementContent');
+        console.log('重启动画，scrollContent元素:', scrollContent ? '存在' : '不存在');
+        
         if (scrollContent) {
             // 移除动画
             scrollContent.style.animation = 'none';
+            console.log('动画已移除');
             
             // 强制重排
             scrollContent.offsetHeight;
             
             // 重新添加动画（缩短滚动时长）
             scrollContent.style.animation = 'scroll-announcement 60s linear infinite';
+            console.log('动画已重新设置:', scrollContent.style.animation);
         }
     }
 
@@ -833,8 +873,12 @@ class IssueModule {
      * 初始化公告栏
      */
     async initAnnouncementBar() {
-        await this.loadIssues();
+        // 如果问题数据还没有加载，则先加载
+        if (!this.issues || this.issues.length === 0) {
+            await this.loadIssues();
+        }
         await this.updateAnnouncementBar();
+        console.log('公告栏内容更新完成，问题数量:', this.issues ? this.issues.length : 0);
     }
 
     /**
