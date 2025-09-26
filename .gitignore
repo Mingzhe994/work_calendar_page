@@ -163,3 +163,9 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Project specific additions
+cookie.txt
+mz994_pythonanywhere_com_wsgi.py
+tests/test_report.md
+tests/test_report_template.md
