@@ -1,4 +1,5 @@
 from models import db, User
+from services.workflow_service import WorkflowService
 
 class AuthService:
     @staticmethod
@@ -13,11 +14,16 @@ class AuthService:
         
         # 创建新用户
         user = User(username=username, email=email)
+        print(f"Debug: Password before assignment: {password}") # 添加调试打印
         user.password = password
         
         try:
             db.session.add(user)
-            db.session.commit()
+            db.session.commit() # 确保用户ID在复制工作流前已生成并提交
+            # 注册成功后，为新用户复制默认工作流
+            WorkflowService.copy_default_workflows_for_user(user.id)
+            # db.session.commit() # 此处不再需要，因为copy_default_workflows_for_user内部已提交
+
             return True, "注册成功"
         except Exception as e:
             db.session.rollback()

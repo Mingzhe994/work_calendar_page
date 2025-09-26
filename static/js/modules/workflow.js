@@ -111,7 +111,7 @@ class WorkflowModule {
                     <div class="flex-grow-1">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="mb-0">
-                                <i class="fas fa-project-diagram me-2"></i>${workflow.name}
+                                <i class="fas fa-project-diagram me-2"></i>${workflow.name.replace(/ \(用户ID: \d+\)/, '')}
                             </h6>
                             <div>
                                 ${!workflow.is_default ? 
@@ -223,7 +223,7 @@ class WorkflowModule {
             workflows.forEach(workflow => {
                 const option = document.createElement('option');
                 option.value = workflow.id;
-                option.textContent = workflow.name;
+                option.textContent = workflow.name.replace(/ \(用户ID: \d+\)/, ''); // 移除用户ID后缀
                 workflowSelector.appendChild(option);
             });
         }
@@ -233,7 +233,7 @@ class WorkflowModule {
             workflows.forEach(workflow => {
                 const option = document.createElement('option');
                 option.value = workflow.id;
-                option.textContent = workflow.name;
+                option.textContent = workflow.name.replace(/ \(用户ID: \d+\)/, ''); // 移除用户ID后缀
                 taskWorkflowSelect.appendChild(option);
             });
         }
@@ -243,8 +243,8 @@ class WorkflowModule {
             taskTypeSelect.innerHTML = '<option value="">选择任务类型</option>';
             workflows.forEach(workflow => {
                 const option = document.createElement('option');
-                option.value = workflow.name;
-                option.textContent = workflow.name;
+                option.value = workflow.name.replace(/ \(用户ID: \d+\)/, ''); // 移除用户ID后缀
+                option.textContent = workflow.name.replace(/ \(用户ID: \d+\)/, ''); // 移除用户ID后缀
                 taskTypeSelect.appendChild(option);
             });
         }

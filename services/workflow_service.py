@@ -1,3 +1,4 @@
+import re
 from typing import List, Dict, Optional, Any
 from models import db, Workflow, Task
 from config import Config
@@ -5,6 +6,41 @@ from config import Config
 class WorkflowService:
     """工作流服务类"""
     
+    @staticmethod
+    def copy_default_workflows_for_user(user_id: int) -> None:
+        """将全局默认工作流复制给指定用户"""
+        try:
+            default_workflows = Workflow.query.filter_by(user_id=None).all()
+            for default_workflow in default_workflows:
+                # 移除可能存在的旧用户ID后缀
+                cleaned_workflow_name = re.sub(r' \(用户ID: \d+\)', '', default_workflow.name)
+                # 为复制的工作流名称添加用户ID后缀，确保唯一性
+                new_workflow_name = f"{cleaned_workflow_name} (用户ID: {user_id})"
+
+                # 检查该用户是否已存在同名工作流
+                existing_user_workflow = Workflow.query.filter_by(
+                    name=new_workflow_name,
+                    user_id=user_id
+                ).first()
+
+                if existing_user_workflow:
+                    print(f"用户 {user_id} 已存在工作流 '{new_workflow_name}'，跳过复制。")
+                    continue
+
+                new_workflow = Workflow(
+                    name=new_workflow_name,
+                    description=default_workflow.description,
+                    is_default=False,
+                    user_id=user_id
+                )
+                new_workflow.set_steps(default_workflow.get_steps())
+                db.session.add(new_workflow)
+            db.session.commit()
+            return True
+        except Exception as e:
+            db.session.rollback()
+            raise e
+
     @staticmethod
     def get_workflow_by_task_type(task_type: str, user_id=None) -> Dict[str, Any]:
         """根据任务类型获取工作流"""

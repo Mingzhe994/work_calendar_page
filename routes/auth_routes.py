@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from services.auth_service import AuthService
+from services.workflow_service import WorkflowService
 from models import User, db
 from functools import wraps
 
@@ -20,15 +21,35 @@ auth_bp = Blueprint('auth', __name__)
 def login():
     """用户登录"""
     if current_user.is_authenticated:
+        # 如果是JSON请求，返回JSON响应
+        if request.is_json:
+            return jsonify({'success': True, 'message': '用户已登录'}), 200
         return redirect(url_for('main.index'))
     
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = None
+        password = None
+
+        if request.is_json:
+            data = request.get_json()
+            username = data.get('username')
+            password = data.get('password')
+        else:
+            username = request.form.get('username')
+            password = request.form.get('password')
         
+        if not username or not password:
+            if request.is_json:
+                return jsonify({'success': False, 'message': '缺少用户名或密码'}), 400
+            flash('缺少用户名或密码', 'danger')
+            return render_template('auth/login.html')
+
         success, result = AuthService.authenticate_user(username, password)
         if success:
             login_user(result)
+            if request.is_json:
+                return jsonify({'success': True, 'message': '登录成功'}), 200
+            
             next_page = request.args.get('next')
             # 如果是管理员用户，直接跳转到管理后台主界面
             if result.is_admin:
@@ -38,6 +59,8 @@ def login():
                 next_page = url_for('main.index')
             return redirect(next_page)
         else:
+            if request.is_json:
+                return jsonify({'success': False, 'message': result}), 401
             flash(result, 'danger')
     
     return render_template('auth/login.html')
@@ -49,21 +72,37 @@ def register():
         return redirect(url_for('main.index'))
     
     if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        
-        if password != confirm_password:
-            flash('两次输入的密码不一致', 'danger')
-            return render_template('auth/register.html')
-        
-        success, message = AuthService.register_user(username, email, password)
-        if success:
-            flash(message, 'success')
-            return redirect(url_for('auth.login'))
+        if request.is_json:
+            data = request.get_json()
+            username = data.get('username')
+            email = data.get('email')
+            password = data.get('password')
+            confirm_password = data.get('confirm_password')
+            
+            if password != confirm_password:
+                return jsonify({'success': False, 'message': '两次输入的密码不一致'}), 400
+            
+            success, message = AuthService.register_user(username, email, password)
+            if success:
+                return jsonify({'success': True, 'message': message}), 200
+            else:
+                return jsonify({'success': False, 'message': message}), 400
         else:
-            flash(message, 'danger')
+            username = request.form.get('username')
+            email = request.form.get('email')
+            password = request.form.get('password')
+            confirm_password = request.form.get('confirm_password')
+            
+            if password != confirm_password:
+                flash('两次输入的密码不一致', 'danger')
+                return render_template('auth/register.html')
+            
+            success, message = AuthService.register_user(username, email, password)
+            if success:
+                flash(message, 'success')
+                return redirect(url_for('auth.login'))
+            else:
+                flash(message, 'danger')
     
     return render_template('auth/register.html')
 
@@ -131,6 +170,9 @@ def create_user():
         user.password = password
         db.session.add(user)
         db.session.commit()
+        
+        # 为新用户复制默认工作流
+        WorkflowService.copy_default_workflows_for_user(user.id)
         
         flash('用户创建成功', 'success')
         return redirect(url_for('auth.admin_dashboard'))
