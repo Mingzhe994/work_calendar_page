@@ -49,15 +49,6 @@ if __name__ == '__main__':
 
         from models import User
 
-        # 创建默认管理员账号
-        admin = User.query.filter_by(username='stuartzhang').first()
-        # if not admin:
-        #     admin = User(username='stuartzhang', email='admin@example.com', is_admin=True)
-        #     admin.password = 'Pw123456@python'
-        #     db.session.add(admin)
-        #     db.session.commit()
-        #     print('默认管理员账号已创建')
-
         # 初始化默认工作流
         init_default_workflows(app, db)
 
